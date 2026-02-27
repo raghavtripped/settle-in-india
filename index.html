@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settle In India</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* Design System Variables */
+        :root {
+            --bg: #0A0A0A;
+            --surface: #111111;
+            --card: #1A1A1A;
+            --border: #2A2A2A;
+            --text-primary: #F5F0E8;
+            --text-secondary: #888888;
+            --accent: #E8C547;
+            --wrong: #E85447;
+            --correct: #47C987;
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --space-1: 8px;
+            --space-2: 16px;
+            --space-3: 24px;
+            --space-4: 32px;
+            --space-6: 48px;
+            --space-8: 64px;
+        }
+
+        /* Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: var(--font-heading);
+            font-weight: 600;
+        }
+
+        button {
+            font-family: var(--font-body);
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: inherit;
+        }
+
+        /* View Container */
+        #app {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            position: relative;
+        }
+
+        .view {
+            display: none;
+            flex: 1;
+            width: 100%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .view.active {
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+        }
+
+        /* View 1: Landing */
+        #view-landing {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: var(--space-4);
+        }
+
+        #view-landing h1 {
+            font-size: 48px;
+            margin-bottom: var(--space-2);
+        }
+
+        #view-landing p {
+            color: var(--text-secondary);
+            font-size: 18px;
+            margin-bottom: var(--space-6);
+            max-width: 600px;
+        }
+
+        .cta-btn {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: var(--space-2) var(--space-4);
+            font-size: 16px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .cta-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* View 2: City Selection */
+        #view-city {
+            align-items: center;
+            padding: var(--space-8) var(--space-4);
+        }
+
+        #view-city h1 {
+            font-size: 36px;
+            margin-bottom: var(--space-6);
+        }
+
+        .city-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-3);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .city-tile {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            padding: var(--space-3);
+            border-radius: 6px;
+            text-align: left;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .city-tile::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(232, 197, 71, 0.05);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .city-tile:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .city-tile:hover::after {
+            opacity: 1;
+        }
+
+        .city-tile.selected {
+            border-color: var(--accent);
+            animation: pulse 0.4s ease;
+        }
+
+        .city-tile h3 {
+            font-size: 22px;
+            margin-bottom: var(--space-1);
+        }
+
+        .city-tile p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* View 3: Quiz Interface */
+        #view-quiz {
+            align-items: center;
+            padding: var(--space-6) var(--space-2);
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 720px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
+        }
+
+        .quiz-city {
+            font-family: var(--font-heading);
+            font-size: 24px;
+        }
+
+        .quiz-progress-text {
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 2px;
+            background-color: var(--border);
+            margin-bottom: var(--space-6);
+            position: relative;
+        }
+
+        #progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Question Card */
+        .question-wrapper {
+            animation: fadeInStagger 0.4s ease forwards;
+        }
+
+        .q-number {
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: var(--space-2);
+        }
+
+        .q-text {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: var(--space-4);
+            line-height: 1.6;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+        }
+
+        .option-btn {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            padding: var(--space-3);
+            text-align: left;
+            border-radius: 6px;
+            font-size: 16px;
+            display: flex;
+            align-items: baseline;
+            transition: all 0.2s ease;
+            min-height: 48px;
+        }
+
+        .option-btn .opt-label {
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            margin-right: var(--space-2);
+            font-size: 14px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            background-color: #1E1E1A;
+        }
+
+        /* Option States */
+        .option-btn.selected {
+            border-color: var(--accent);
+            background-color: rgba(232, 197, 71, 0.05);
+        }
+
+        .option-btn.correct {
+            border-color: var(--correct);
+            background-color: rgba(71, 201, 135, 0.05);
+            color: var(--correct);
+        }
+
+        .option-btn.correct .opt-label {
+            color: var(--correct);
+        }
+
+        .option-btn.wrong {
+            border-color: var(--wrong);
+            background-color: rgba(232, 84, 71, 0.05);
+            color: var(--wrong);
+        }
+
+        .option-btn.wrong .opt-label {
+            color: var(--wrong);
+        }
+
+        .option-btn.faded {
+            opacity: 0.4;
+            border-color: var(--border);
+            background-color: transparent;
+        }
+
+        .explanation-panel {
+            background-color: var(--surface);
+            border-left: 3px solid var(--accent);
+            padding: var(--space-3);
+            font-size: 14px;
+            color: #AAAAAA;
+            margin-bottom: var(--space-4);
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .explanation-panel.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #next-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: var(--space-2);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #next-btn-container.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* View 4: Results */
+        #view-results {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: var(--space-4);
+        }
+
+        .score-display {
+            font-family: var(--font-heading);
+            font-size: 72px;
+            color: var(--accent);
+            margin-bottom: var(--space-2);
+        }
+
+        .verdict-text {
+            font-size: 20px;
+            margin-bottom: var(--space-6);
+            color: var(--text-primary);
+        }
+
+        .results-actions {
+            display: flex;
+            gap: var(--space-3);
+            justify-content: center;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: var(--space-4);
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--surface);
+            color: var(--text-primary);
+            padding: var(--space-2) var(--space-3);
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: var(--space-3);
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(42, 42, 42, 0.3);
+            margin-top: auto;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(0.98);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeInStagger {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Global Nav */
+        .global-nav {
+            padding: var(--space-2) var(--space-4);
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--bg);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .nav-btn {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-family: var(--font-mono);
+            transition: color 0.2s;
+            padding: var(--space-1) var(--space-2);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            color: var(--accent);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .city-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .city-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--space-2);
+            }
+
+            #view-landing h1 {
+                font-size: 36px;
+            }
+
+            .score-display {
+                font-size: 56px;
+            }
+
+            .results-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Global Nav -->
+        <div class="global-nav">
+            <button class="nav-btn" onclick="app.goBack()" id="btn-back" disabled>&larr; Back</button>
+            <button class="nav-btn" onclick="app.goForward()" id="btn-forward" disabled>Forward &rarr;</button>
+        </div>
+
+        <!-- View 1: Landing -->
+        <div id="view-landing" class="view active">
+            <h1>Where are you moving?</h1>
+            <p>A brutally honest quiz built for people who are serious about relocating.</p>
+            <button class="cta-btn" onclick="app.navigateTo('city')">Get Started &rarr;</button>
+        </div>
+
+        <!-- View 2: City Selection -->
+        <div id="view-city" class="view">
+            <h1>Pick your city.</h1>
+            <div class="city-grid" id="city-grid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- View 3: Quiz Interface -->
+        <div id="view-quiz" class="view">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <div class="quiz-city" id="qc-name">City Name</div>
+                    <div class="quiz-progress-text" id="qc-progress">Q 1 / 25</div>
+                </div>
+                <div class="progress-bar-container">
+                    <div id="progress-bar"></div>
+                </div>
+
+                <div id="question-render-area">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div id="next-btn-container">
+                    <button class="cta-btn" onclick="app.nextQuestion()">Next Question &rarr;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 4: Results -->
+        <div id="view-results" class="view">
+            <div class="score-display" id="res-score">0 / 25</div>
+            <div class="verdict-text" id="res-verdict">Verdict goes here.</div>
+            <div class="results-actions">
+                <button class="cta-btn" onclick="app.navigateTo('city')">Try Another City</button>
+                <button class="cta-btn" onclick="app.shareScore()"
+                    style="border-color: var(--accent); color: var(--accent);">Share Score</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Score copied to clipboard.</div>
+
+    <footer>
+        Built for people who do their homework.
+    </footer>
+
+    <!-- QUIZ DATA -->
+    <!-- QUIZ DATA FILES -->
+    <script src="data_bangalore.js"></script>
+    <script src="data_mumbai.js"></script>
+    <script src="data_delhi.js"></script>
+    <script src="data_hyderabad.js"></script>
+    <script src="data_pune.js"></script>
+    <script src="data_chennai.js"></script>
+    <script src="data_kolkata.js"></script>
+    <script src="data_ahmedabad.js"></script>
+    <script src="data_kochi.js"></script>
+    <script src="data_jaipur.js"></script>
+
+
+    <!-- APP LOGIC -->
+    <script>
+        // State
+        const state = {
+            currentView: 'landing',
+            city: null,
+            currentQuestionIndex: 0,
+            score: 0,
+            hasAnsweredCurrent: false,
+            questions: []
+        };
+
+        const app = {
+            historyStack: [],
+            historyIndex: -1,
+
+            init() {
+                this.renderCityTiles();
+                this.setupKeyboard();
+                this.navigateTo('landing'); // Initialize first history entry
+            },
+
+            navigateTo(viewId, cityId = null, fromHistory = false) {
+                // Handle History
+                if (!fromHistory) {
+                    this.historyStack = this.historyStack.slice(0, this.historyIndex + 1);
+                    this.historyStack.push({ viewId, cityId, score: state.score, qIndex: state.currentQuestionIndex });
+                    this.historyIndex++;
+                    this.updateNavButtons();
+                }
+
+                // Hide current
+                document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+
+                // Show new
+                const view = document.getElementById(`view-${viewId}`);
+                if (view) {
+                    // Small delay for smooth opacity transition
+                    setTimeout(() => view.classList.add('active'), 50);
+                    state.currentView = viewId;
+                }
+
+                if (viewId === 'quiz' && cityId) {
+                    if (fromHistory) {
+                        const stateObj = this.historyStack[this.historyIndex];
+                        this.startQuiz(cityId, stateObj.qIndex, stateObj.score);
+                    } else {
+                        this.startQuiz(cityId);
+                    }
+                } else if (viewId === 'city') {
+                    // Reset state
+                    state.city = null;
+                    state.currentQuestionIndex = 0;
+                    state.score = 0;
+                }
+            },
+
+            goBack() {
+                if (this.historyIndex > 0) {
+                    // Save current progress before going back so forward works seamlessly
+                    if (state.currentView === 'quiz') {
+                        this.historyStack[this.historyIndex].score = state.score;
+                        this.historyStack[this.historyIndex].qIndex = state.currentQuestionIndex;
+                    }
+
+                    this.historyIndex--;
+                    const stateObj = this.historyStack[this.historyIndex];
+                    this.navigateTo(stateObj.viewId, stateObj.cityId, true);
+                    this.updateNavButtons();
+                }
+            },
+
+            goForward() {
+                if (this.historyIndex < this.historyStack.length - 1) {
+                    this.historyIndex++;
+                    const stateObj = this.historyStack[this.historyIndex];
+                    this.navigateTo(stateObj.viewId, stateObj.cityId, true);
+                    this.updateNavButtons();
+                }
+            },
+
+            updateNavButtons() {
+                const backBtn = document.getElementById('btn-back');
+                const fwdBtn = document.getElementById('btn-forward');
+                if (backBtn && fwdBtn) {
+                    backBtn.disabled = this.historyIndex <= 0;
+                    fwdBtn.disabled = this.historyIndex >= this.historyStack.length - 1;
+                }
+            },
+
+            renderCityTiles() {
+                const grid = document.getElementById('city-grid');
+                grid.innerHTML = '';
+
+                const citiesInfo = [
+                    { id: 'bangalore', name: 'Bangalore', desc: 'Traffic, startups, filter coffee' },
+                    { id: 'mumbai', name: 'Mumbai', desc: 'Maximum city. Minimum sleep.' },
+                    { id: 'delhi', name: 'Delhi NCR', desc: 'Power, pollution, and paranthe.' },
+                    { id: 'hyderabad', name: 'Hyderabad', desc: 'Biryani, IT corridors, and old money.' },
+                    { id: 'pune', name: 'Pune', desc: 'Students, retirees, and weekend hills.' },
+                    { id: 'chennai', name: 'Chennai', desc: 'Filters, flyovers, and fierce locals.' },
+                    { id: 'kolkata', name: 'Kolkata', desc: 'Culture, chaos, and excellent fish curry.' },
+                    { id: 'ahmedabad', name: 'Ahmedabad', desc: 'Dry, fast-growing, deeply entrepreneurial.' },
+                    { id: 'kochi', name: 'Kochi', desc: 'Backwaters, startups, and sea breeze.' },
+                    { id: 'jaipur', name: 'Jaipur', desc: 'Pink walls, pink traffic, pink everything.' }
+                ];
+
+                citiesInfo.forEach(city => {
+                    const el = document.createElement('div');
+                    el.className = 'city-tile';
+                    el.innerHTML = `
+                        <h3>${city.name}</h3>
+                        <p>${city.desc}</p>
+                    `;
+                    el.onclick = () => {
+                        el.classList.add('selected');
+                        setTimeout(() => this.navigateTo('quiz', city.id), 400);
+                    };
+                    grid.appendChild(el);
+                });
+            },
+
+            startQuiz(cityId, restoredQIndex = 0, restoredScore = 0) {
+                state.city = cityId;
+                state.questions = window.QUIZ_DATA && window.QUIZ_DATA[cityId] ? window.QUIZ_DATA[cityId] : [];
+                state.currentQuestionIndex = restoredQIndex;
+                state.score = restoredScore;
+
+                const cName = cityId.charAt(0).toUpperCase() + cityId.slice(1);
+                document.getElementById('qc-name').textContent = cityId === 'delhi' ? 'Delhi NCR' : cName;
+
+                if (state.questions.length === 0) {
+                    document.getElementById('question-render-area').innerHTML = `<p style="padding: 20px 0; color: var(--wrong);">Quiz data for this city is not available yet.</p>`;
+                    return;
+                }
+
+                this.renderQuestion();
+            },
+
+            renderQuestion() {
+                const q = state.questions[state.currentQuestionIndex];
+                const total = state.questions.length;
+                state.hasAnsweredCurrent = false;
+
+                // Update Header
+                document.getElementById('qc-progress').textContent = `Q ${state.currentQuestionIndex + 1} / ${total}`;
+
+                // Update Progress bar
+                const progressPct = (state.currentQuestionIndex / total) * 100;
+                document.getElementById('progress-bar').style.width = `${progressPct}%`;
+
+                // Hide next button
+                document.getElementById('next-btn-container').classList.remove('show');
+
+                const container = document.getElementById('question-render-area');
+
+                // Build options HTML
+                const optionsHtml = Object.entries(q.options).map(([key, val]) => `
+                    <button class="option-btn" onclick="app.selectOption('${key}')" id="opt-${key}">
+                        <span class="opt-label">${key}</span>
+                        <span class="opt-text">${val}</span>
+                    </button>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="question-wrapper">
+                        <div class="q-number">Question ${state.currentQuestionIndex + 1} &mdash; ${q.category}</div>
+                        <div class="q-text">${q.question}</div>
+                        <div class="options-grid" id="options-grid">
+                            ${optionsHtml}
+                        </div>
+                        <div class="explanation-panel" id="exp-panel">
+                            ${q.explanation}
+                        </div>
+                    </div>
+                `;
+            },
+
+            selectOption(selectedKey) {
+                if (state.hasAnsweredCurrent) return;
+                state.hasAnsweredCurrent = true;
+
+                const q = state.questions[state.currentQuestionIndex];
+                const isCorrect = selectedKey === q.correct;
+
+                if (isCorrect) state.score++;
+
+                // Update UI for options
+                const buttons = document.querySelectorAll('.option-btn');
+                buttons.forEach(btn => {
+                    const key = btn.id.split('-')[1];
+                    btn.disabled = true;
+
+                    if (key === q.correct) {
+                        btn.classList.add('correct');
+                    } else if (key === selectedKey && !isCorrect) {
+                        btn.classList.add('wrong');
+                    } else {
+                        btn.classList.add('faded');
+                    }
+                });
+
+                // Show Explanation & Next button
+                setTimeout(() => {
+                    document.getElementById('exp-panel').classList.add('show');
+                    document.getElementById('next-btn-container').classList.add('show');
+                }, 300);
+            },
+
+            nextQuestion() {
+                if (state.currentQuestionIndex < state.questions.length - 1) {
+                    state.currentQuestionIndex++;
+                    // Push to history for per-question navigation
+                    this.historyStack = this.historyStack.slice(0, this.historyIndex + 1);
+                    this.historyStack.push({ viewId: 'quiz', cityId: state.city, score: state.score, qIndex: state.currentQuestionIndex });
+                    this.historyIndex++;
+                    this.updateNavButtons();
+                    this.renderQuestion();
+                } else {
+                    this.showResults();
+                }
+            },
+
+            showResults() {
+                this.navigateTo('results');
+                const total = state.questions.length;
+                document.getElementById('res-score').textContent = `${state.score} / ${total}`;
+
+                let verdict = "";
+                if (state.score >= 22) verdict = "You were born in this city.";
+                else if (state.score >= 16) verdict = "You'll survive. Might even thrive.";
+                else if (state.score >= 10) verdict = "You need at least 3 more months of research.";
+                else verdict = "Book a site visit. Immediately.";
+
+                document.getElementById('res-verdict').textContent = verdict;
+            },
+
+            shareScore() {
+                const cityFormat = state.city.charAt(0).toUpperCase() + state.city.slice(1);
+                const text = `I scored ${state.score}/${state.questions.length} on the ${cityFormat} Survival Quiz at Settle In India. Think you know your city? settleindia.app`;
+                navigator.clipboard.writeText(text).then(() => {
+                    const toast = document.getElementById('toast');
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 3000);
+                });
+            },
+
+            setupKeyboard() {
+                document.addEventListener('keydown', (e) => {
+                    if (state.currentView !== 'quiz') return;
+
+                    if (!state.hasAnsweredCurrent) {
+                        const keys = ['a', 'b', 'c', 'd'];
+                        const map = { 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D' };
+                        if (keys.includes(e.key.toLowerCase())) {
+                            this.selectOption(map[e.key.toLowerCase()]);
+                        }
+                    } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+                        this.nextQuestion();
+                    }
+                });
+            }
+        };
+
+        // Initialize Call
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load dummy data fallback if data.js didn't load properly
+            if (!window.QUIZ_DATA) {
+                window.QUIZ_DATA = {};
+            }
+            app.init();
+        });
+    </script>
+</body>
+
+</html>
